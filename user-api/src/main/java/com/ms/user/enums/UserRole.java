@@ -4,7 +4,7 @@ public enum UserRole {
     ADMIN("Admin - Can manager the books"),
     CLIENT("Client - Can get books");
 
-    private String description;
+    private final String description;
 
     UserRole(String description) {
         this.description = description;
