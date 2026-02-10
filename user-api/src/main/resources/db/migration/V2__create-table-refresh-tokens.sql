@@ -1,0 +1,9 @@
+CREATE TABLE TB_REFRESH_TOKENS(
+    refresh_token_id UUID PRIMARY KEY ,
+    user_id UUID NOT NULL REFERENCES TB_USERS(user_id) ON DELETE CASCADE,
+    token VARCHAR(255) NOT NULL UNIQUE,
+    created_at TIMESTAMP NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    is_revoked BOOLEAN NOT NULL DEFAULT FALSE,
+    revoke_at TIMESTAMP
+)

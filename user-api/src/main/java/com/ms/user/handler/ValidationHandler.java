@@ -1,4 +1,4 @@
-package com.ms.user.exception.handler;
+package com.ms.user.handler;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

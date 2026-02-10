@@ -1,5 +1,6 @@
 package com.ms.user.infra.security;
 
+import com.ms.user.exception.tokenjwt.InvalidTokenOrExpired;
 import com.ms.user.model.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -29,7 +30,7 @@ public class Middleware extends OncePerRequestFilter {
 
         if(token != null){
             var login = tokenService.validateToken(token);
-            UserDetails user = userRepository.findByEmail(login).orElseThrow(() -> new RuntimeException("User not found"));
+            UserDetails user = userRepository.findByEmail(login).orElseThrow(() -> new InvalidTokenOrExpired("Token invalid or expired. Please log in again."));
             var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }

@@ -1,6 +1,11 @@
 package com.ms.user.model.services;
 
 import com.ms.user.enums.UserRole;
+import com.ms.user.exception.auth.ExpiredCodeException;
+import com.ms.user.exception.auth.InvalidCodeException;
+import com.ms.user.exception.user.UserAlreadyExistException;
+import com.ms.user.exception.user.UserAlreadyVerifiedException;
+import com.ms.user.exception.user.UserNotFoundException;
 import com.ms.user.infra.security.TokenService;
 import com.ms.user.model.dtos.*;
 import com.ms.user.model.entities.UserModel;
@@ -30,22 +35,28 @@ public class AuthService {
     @Autowired
     private TokenService tokenService;
 
+    @Autowired
+    private RefreshTokenService refreshTokenService;
+
     private String generateCode() {
         return String.valueOf(100000 + new Random().nextInt(900000));
     }
 
+    @Transactional
     public LoginResponseDTO login(LoginRequestDTO data) {
         var user = new UsernamePasswordAuthenticationToken(data.email(), data.password());
         var auth = authenticationManager.authenticate(user);
+        refreshTokenService.revokeAllUserTokensByEmail(data.email().toLowerCase());
         var token = tokenService.generateToken((UserModel) auth.getPrincipal());
-        return new LoginResponseDTO(data.email().toLowerCase(), token);
+        String refreshToken = refreshTokenService.saveToken(new RefreshTokenRequest(data.email().toLowerCase()));
+        return new LoginResponseDTO(data.email().toLowerCase(), token, refreshToken);
     }
 
     @Transactional
     public String register(RegisterRequestDTO data) {
         var user = userRepository.findByEmail(data.email().toLowerCase());
         if (user.isPresent()) {
-            throw new RuntimeException("User already exists");
+            throw new UserAlreadyExistException("User already exists");
         }
 
         UserModel newUser = new UserModel();
@@ -71,10 +82,10 @@ public class AuthService {
     public String confirm(ConfirmeUserRequestDTO data){
         var user = userRepository.findByEmail(data.email());
 
-        if(user.isEmpty()) throw new RuntimeException("User not found");
-        if(user.get().isVerified()) throw new RuntimeException("User already verified");
-        if(!data.code().equals(user.get().getVerificationCode())) throw new RuntimeException("Code is invalid");
-        if(LocalDateTime.now().isAfter(user.get().getVerificationTokenExpiresAt())) throw new RuntimeException("Code expired");
+        if(user.isEmpty()) throw new UserNotFoundException("User not found");
+        if(user.get().isVerified()) throw new UserAlreadyVerifiedException("User already verified");
+        if(!data.code().equals(user.get().getVerificationCode())) throw new InvalidCodeException("Code is invalid");
+        if(LocalDateTime.now().isAfter(user.get().getVerificationTokenExpiresAt())) throw new ExpiredCodeException("Code expired");
 
         if(data.code().equals(user.get().getVerificationCode())) {
             user.get().setVerified(true);
@@ -89,7 +100,7 @@ public class AuthService {
     }
 
 
-    public String resendCode(EmailToResendCodeRequestDTO data){
+    public String resendCode(ResendCodeRequestDTO data){
         var user = userRepository.findByEmail(data.email()).orElseThrow(() -> new RuntimeException("User not found"));
 
         if (user.isVerified()) {
@@ -131,7 +142,7 @@ public class AuthService {
     @Transactional
     public String recoverPassword(RecoverPasswordRequestDTO data) {
         var user = userRepository.findByEmail(data.email().toLowerCase())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         if (!user.isVerified()) {
             throw new RuntimeException("User is not verified");
@@ -149,11 +160,11 @@ public class AuthService {
 
     @Transactional
     public String resetPassword(ResetPasswordRequestDTO data) {
-        var user = userRepository.findByEmail(data.email().toLowerCase()).orElseThrow(() -> new RuntimeException("User not found"));
+        var user = userRepository.findByEmail(data.email().toLowerCase()).orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        if (!user.isVerified()) throw new RuntimeException("User is not verified");
-        if (user.getVerificationCode() == null || !user.getVerificationCode().equals(data.code())) throw new RuntimeException("Invalid verification code");
-        if (LocalDateTime.now().isAfter(user.getVerificationTokenExpiresAt())) throw new RuntimeException("Verification code expired");
+        if (!user.isVerified()) throw new UserNotFoundException("User is not verified");
+        if (user.getVerificationCode() == null || !user.getVerificationCode().equals(data.code())) throw new InvalidCodeException("Invalid verification code");
+        if (LocalDateTime.now().isAfter(user.getVerificationTokenExpiresAt())) throw new ExpiredCodeException("Verification code expired");
 
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         user.setPassword(passwordEncoder.encode(data.password()));
@@ -165,5 +176,16 @@ public class AuthService {
         userRepository.save(user);
 
         return "Password has been reset successfully";
+    }
+
+    @Transactional
+    public TokenResponseDTO refreshToken(RefreshRequestDTO data){
+        return refreshTokenService.generateTokenJwt(data);
+    }
+
+
+    @Transactional
+    public void logout(RefreshRequestDTO data){
+        refreshTokenService.revokeToken(data.refreshToken());
     }
 }

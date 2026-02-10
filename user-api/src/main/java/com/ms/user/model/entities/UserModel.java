@@ -57,15 +57,19 @@ public class UserModel implements UserDetails {
     @Column(name = "verification_token_expires_at")
     private LocalDateTime verificationTokenExpiresAt;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<RefreshTokenModel> refreshTokens;
+
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (this.role == UserRole.ADMIN){
             return List.of(
                     new SimpleGrantedAuthority("ROLE_ADMIN"),
-                    new SimpleGrantedAuthority("ROLE_USER")
+                    new SimpleGrantedAuthority("ROLE_CLIENT")
             );
         }
-        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        return List.of(new SimpleGrantedAuthority("ROLE_CLIENT"));
     }
 
     @Override

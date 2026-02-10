@@ -2,7 +2,7 @@ package com.ms.user.model.dtos;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record EmailToResendCodeRequestDTO(
+public record ResendCodeRequestDTO(
         @NotBlank
         String email
 ) {
