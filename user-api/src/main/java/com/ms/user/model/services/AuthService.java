@@ -10,6 +10,7 @@ import com.ms.user.infra.security.TokenService;
 import com.ms.user.model.dtos.*;
 import com.ms.user.model.entities.UserModel;
 import com.ms.user.model.repository.UserRepository;
+import com.ms.user.producer.UserProduce;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -37,6 +38,9 @@ public class AuthService {
 
     @Autowired
     private RefreshTokenService refreshTokenService;
+
+    @Autowired
+    private UserProduce userProduce;
 
     private String generateCode() {
         return String.valueOf(100000 + new Random().nextInt(900000));
@@ -71,6 +75,13 @@ public class AuthService {
         newUser.setUpdatedAt(LocalDateTime.now());
         newUser.setVerificationTokenExpiresAt(LocalDateTime.now().plusMinutes(10));
 
+        EmailDTO emailDTO = new EmailDTO(
+                newUser.getEmail(),
+                "Verification Code",
+                "Your verification code is: " + newUser.getVerificationCode()
+        );
+
+        userProduce.publishEmailMessage(emailDTO);
         userRepository.save(newUser);
 
         System.out.println("Developer Message:");
