@@ -17,6 +17,6 @@ public class UserProduce {
     private String routingKey;
 
     public void publishEmailMessage(EmailDTO emailDTO){
-        rabbitTemplate.convertAndSend("",routingKey, emailDTO);
+        rabbitTemplate.convertAndSend("" ,routingKey, emailDTO);
     }
 }

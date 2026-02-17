@@ -1,6 +1,7 @@
 package com.ms.email_api.infra.resend;
 
 import com.ms.email_api.adapters.EmailSenderGateway;
+import com.ms.email_api.core.exceptions.EmailServiceException;
 import com.ms.email_api.infra.config.ResendConfig;
 import com.resend.core.exception.ResendException;
 import com.resend.services.emails.model.CreateEmailOptions;
@@ -28,8 +29,8 @@ public class ResendEmailSenderService implements EmailSenderGateway {
                 .build();
         try{
             CreateEmailResponse data = resendConfig.resendClient().emails().send(params);
-        }catch (ResendException e){
-            e.printStackTrace();
+        }catch (ResendException exception){
+            throw new EmailServiceException("Failure while sending email", exception);
         }
     }
 }

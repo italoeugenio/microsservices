@@ -34,6 +34,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/auth/confirm").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/reset-password").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/recover-password").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/refresh-token").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(middleware, UsernamePasswordAuthenticationFilter.class)

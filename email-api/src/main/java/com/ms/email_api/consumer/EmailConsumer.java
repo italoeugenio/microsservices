@@ -15,6 +15,6 @@ public class EmailConsumer {
 
     @RabbitListener(queues = "${broker.queue.email.name}")
     public void listenEmailQueue(@Payload EmailDTO emailDTO) {
-        System.out.println("Mensagem recebida: " + emailDTO);
+        emailSenderService.sendEmail(emailDTO.to(), emailDTO.subject(), emailDTO.body());
     }
 }

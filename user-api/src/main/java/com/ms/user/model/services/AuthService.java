@@ -84,8 +84,6 @@ public class AuthService {
         userProduce.publishEmailMessage(emailDTO);
         userRepository.save(newUser);
 
-        System.out.println("Developer Message:");
-        System.out.println(newUser.getVerificationCode());
         return "message: Registration successful. Please check your email for verification code.\n" +
                 "email: " + newUser.getEmail();
     }
@@ -124,9 +122,13 @@ public class AuthService {
         if (now.isAfter(expiresAt)) {
             user.setVerificationCode(generateCode());
             user.setVerificationTokenExpiresAt(now.plusMinutes(10));
+            EmailDTO emailDTO = new EmailDTO(
+                    user.getEmail(),
+                    "New Verification Code",
+                    "Your new verification code is: " + user.getVerificationCode()
+            );
+            userProduce.publishEmailMessage(emailDTO);
             userRepository.save(user);
-            System.out.println("Developer Message:");
-            System.out.println(user.getVerificationCode());
             return "Code resent successfully";
         }
 
@@ -164,7 +166,12 @@ public class AuthService {
         user.setVerificationTokenExpiresAt(LocalDateTime.now().plusMinutes(10));
         userRepository.save(user);
 
-        System.out.println("Developer Message: Recover password code for " + user.getEmail() + " is: " + code);
+        EmailDTO emailDTO = new EmailDTO(
+                user.getEmail(),
+                "Password Recovery",
+                "Your password recovery code is: " + code
+        );
+        userProduce.publishEmailMessage(emailDTO);
 
         return "Password recovery code sent successfully. Please check your email.";
     }
