@@ -6,6 +6,7 @@ import com.ms.stock_control_api.entity.enums.MovimentType;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity(name = "watch")
@@ -69,4 +70,7 @@ public class WatchModel {
 
     @Column(name = "collector_score")
     private long collectorScore;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt = LocalDateTime.now();
 }

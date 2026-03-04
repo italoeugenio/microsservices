@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @Repository
-public interface BrandRepostiory extends JpaRepository<BrandModel, UUID> {
+public interface BrandRepository extends JpaRepository<BrandModel, UUID> {
     Page<BrandModel> findAll (Pageable pageable);
     Page<BrandModel> findByFounded(int founded, Pageable pageable);
 }

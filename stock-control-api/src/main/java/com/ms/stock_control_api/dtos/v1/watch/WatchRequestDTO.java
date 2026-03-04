@@ -17,7 +17,7 @@ public record WatchRequestDTO(
         String reference,
 
         @NotBlank(message = "Movement type is required")
-        String movementType,
+        String movimentType,
 
         @NotBlank(message = "Case material is required")
         String boxMaterial,

@@ -1,5 +1,9 @@
 package com.ms.stock_control_api.entity.enums;
 
+import com.ms.stock_control_api.exception.enums.EnumExceptionInvalidInput;
+
+import java.util.Arrays;
+
 public enum BoxMaterial {
     STEEL,
     TITANIUM,
@@ -14,7 +18,7 @@ public enum BoxMaterial {
             case "RESIN": return RESIN;
             case "BRONZE": return BRONZE;
             case "CERAMIC": return CERAMIC;
-            default: throw new IllegalArgumentException("Invalid input: " + input);
+            default: throw new EnumExceptionInvalidInput("Invalid input: " + input + ". YOU NEED USE THIS OPTIONS: " + Arrays.toString(BoxMaterial.values()));
         }
     }
 
