@@ -1,0 +1,88 @@
+services:
+  rabbitmq:
+    image: rabbitmq:4.2-management-alpine
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+      - rabbitmq-log:/var/log/rabbitmq
+    networks:
+      - rabbitmq-network
+  user-service:
+    container_name: user-service
+    env_file:
+      - ./user-api/.env
+    build:
+      context: ./user-api
+      dockerfile: Dockerfile
+    depends_on:
+      - app-database
+      - rabbitmq
+    restart: always
+    networks:
+      - rabbitmq-network
+      - database-network
+    ports:
+      - "${USER_PORT}:${USER_PORT}"
+    environment:
+      - SPRING_PROFILES_ACTIVE=container       
+  email-service:
+    container_name: email-service
+    env_file:
+      - ./email-api/.env
+    build:
+      context: ./email-api
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      - rabbitmq
+    networks:
+      - rabbitmq-network
+    ports:
+      - "${EMAIL_PORT}:${EMAIL_PORT}"
+    environment:
+      - SPRING_PROFILES_ACTIVE=container     
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin-application
+    restart: always
+    ports:
+      - "4332:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: microservices@application.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    depends_on:
+      - app-database
+    networks:
+      - database-network
+  app-database:
+    image: postgres:17-alpine
+    container_name: app-database
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - app-database-data:/var/lib/postgresql/data
+    networks:
+      - database-network
+    
+
+volumes:
+  rabbitmq-data:
+  rabbitmq-log:
+  app-database-data:
+
+networks:
+  database-network:
+    driver: bridge
+  rabbitmq-network:
+    driver: bridge
