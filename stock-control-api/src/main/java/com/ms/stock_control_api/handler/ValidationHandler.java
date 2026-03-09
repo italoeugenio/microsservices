@@ -27,7 +27,6 @@ public class ValidationHandler {
         }
         list.add(errors);
 
-
         return new ResponseEntity<>(
                 BrandExceptionDetails.builder()
                         .timestamp(LocalDateTime.now())

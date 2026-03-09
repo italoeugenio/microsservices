@@ -20,6 +20,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -33,6 +35,21 @@ public class WatchService {
 
     @Autowired
     private WatchMapper watchMapper;
+
+    private Sort orderBy(String param){
+        switch (param){
+            case "price_asc":
+                return Sort.by(Sort.Direction.ASC, "priceInCents");
+            case "price_desc":
+                return Sort.by(Sort.Direction.DESC, "priceInCents");
+            case "diameter_asc":
+                return Sort.by(Sort.Direction.ASC, "diameterMm");
+            case "wr_desc":
+                return Sort.by(Sort.Direction.DESC, "waterResistanceM");
+            default:
+                return Sort.by(Sort.Direction.DESC, "createdAt");
+        }
+    }
 
     public WatchResponseDTO saveWatch(WatchRequestDTO data){
         WatchModel watchModel = watchMapper.dtoToModel(data);
@@ -79,26 +96,13 @@ public class WatchService {
         WatchModel watchUpdate = watchMapper.dtoToModel(data);
 
         watchUpdate.setId(watch.getId());
-        watchUpdate.setCreatedAt(watch.getCreatedAt());
+        watchUpdate.setUpdatedAt(LocalDateTime.now());
 
         return watchMapper.modelToDto(watchRepository.save(watchUpdate));
     }
 
 
-    private Sort orderBy(String param){
-        switch (param){
-            case "price_asc":
-                return Sort.by(Sort.Direction.ASC, "priceInCents");
-            case "price_desc":
-                return Sort.by(Sort.Direction.DESC, "priceInCents");
-            case "diameter_asc":
-                return Sort.by(Sort.Direction.ASC, "diameterMm");
-            case "wr_desc":
-                return Sort.by(Sort.Direction.DESC, "waterResistanceM");
-            default:
-                return Sort.by(Sort.Direction.DESC, "createdAt");
-        }
-    }
+
 
 
 }

@@ -14,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -64,6 +65,7 @@ public class BrandService {
     public BrandResponseDTO updateBrand(UUID id, BrandRequestDTO data){
         BrandModel brand = brandRepository.findById(id).orElseThrow(() -> new BrandExceptionNotFound(String.valueOf(id)));
         BeanUtils.copyProperties(data, brand);
+        brand.setUpdatedAt(LocalDateTime.now());
         brandRepository.save(brand);
         return new BrandResponseDTO(brand);
     }

@@ -4,6 +4,7 @@ import com.ms.stock_control_api.dtos.v1.brand.BrandRequestDTO;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity(name = "brand")
@@ -28,6 +29,12 @@ public class BrandModel {
 
     @Column(name = "year_founded")
     private int founded;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
     public BrandModel(BrandRequestDTO data){
         this.name = data.name();

@@ -20,6 +20,4 @@ public interface WatchRepository extends JpaRepository<WatchModel, UUID>, JpaSpe
     """)
     Page<WatchModel> findAllByBrandName(@Param("brandName") String brandName, Pageable pageable);
 
-
-
 }

@@ -1,5 +1,6 @@
 package com.ms.stock_control_api.dtos.v1.watch;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record WatchResponseDTO(
@@ -18,6 +19,8 @@ public record WatchResponseDTO(
         long priceInCents,
         String image,
         String waterResistanceLabel,
-        long collectorScore
+        long collectorScor,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt
 ) {
 }

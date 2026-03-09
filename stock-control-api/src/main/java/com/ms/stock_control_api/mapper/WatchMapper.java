@@ -35,7 +35,9 @@ public class WatchMapper {
                 watchModel.getPriceInCents(),
                 watchModel.getImage(),
                 watchModel.getWaterResistanceLabel(),
-                watchModel.getCollectorScore()
+                watchModel.getCollectorScore(),
+                watchModel.getCreatedAt(),
+                watchModel.getUpdatedAt()
         );
     }
 

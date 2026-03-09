@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity(name = "watch")
-@Table(name = "tb_watchs")
+@Table(name = "tb_watches")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -20,6 +20,7 @@ public class WatchModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "watch_id")
     private UUID id;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -73,4 +74,7 @@ public class WatchModel {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt = LocalDateTime.now();
 }
