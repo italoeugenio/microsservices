@@ -1,0 +1,20 @@
+CREATE TABLE TB_WATCHES (
+    watch_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    brand_id UUID NOT NULL REFERENCES TB_BRANDS(brand_id),
+    model VARCHAR(100),
+    reference VARCHAR(50) NOT NULL,
+    moviment_type VARCHAR(20) NOT NULL,
+    box_material VARCHAR(20) NOT NULL,
+    glass_type VARCHAR(20) NOT NULL,
+    water_resistance_m  INTEGER,
+    diameter_mm FLOAT,
+    lug_to_lug_mm FLOAT,
+    thickness_mm FLOAT,
+    lug_width_mm FLOAT,
+    price_in_cents BIGINT,
+    image_url TEXT,
+    water_resistance_label VARCHAR(50),
+    collector_score BIGINT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
