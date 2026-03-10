@@ -22,14 +22,14 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-
-                        .requestMatchers(HttpMethod.POST, "/api/v1/brand/**").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/brand/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/brand/**").authenticated()
-
-                        .requestMatchers(HttpMethod.POST, "/api/v1/watch/**").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/watch/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/watch/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/brand/**").hasRole("CLIENT")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/watch/**").hasRole("CLIENT")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/brand/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/watch/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/brand/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/watch/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/brand/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/watch/**").hasRole("ADMIN")
                         .anyRequest().permitAll()
                 )
                 .addFilterBefore(middleware, UsernamePasswordAuthenticationFilter.class)
