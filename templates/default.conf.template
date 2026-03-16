@@ -1,0 +1,25 @@
+upstream backend {
+    server user-service:${USER_PORT};
+    server stock-service:${STOCK_PORT};  
+}
+
+server {
+    listen 80;
+    server_name stockcontrol;
+
+    location /server {
+        proxy_pass http://backend;   
+    }
+
+    location /auth {
+        proxy_pass http://user-service:${USER_PORT};
+    }
+
+    location /api/v1/brand {
+        proxy_pass http://stock-service:${STOCK_PORT};
+    }
+
+    location /api/v1/watch {
+        proxy_pass http://stock-service:${STOCK_PORT};
+    }
+}

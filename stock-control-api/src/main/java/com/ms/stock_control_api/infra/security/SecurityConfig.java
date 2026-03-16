@@ -30,6 +30,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/v1/watch/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/brand/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/watch/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/server").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
                         .anyRequest().permitAll()
                 )
                 .addFilterBefore(middleware, UsernamePasswordAuthenticationFilter.class)

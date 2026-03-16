@@ -24,6 +24,7 @@ public class TokenService {
                     .withIssuer("api-user")
                     .withSubject(userModel.getEmail())
                     .withExpiresAt(getExpirationDate())
+                    .withClaim("role", "ROLE_" + userModel.getRole().name())
                     .sign(algorithm);
             return token;
 

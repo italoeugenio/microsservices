@@ -3,9 +3,11 @@ services:
     image: rabbitmq:4.2-management-alpine
     container_name: rabbitmq
     restart: always
+    command: sh -c "rabbitmq-plugins enable rabbitmq_prometheus && rabbitmq-server"
     ports:
       - "5672:5672"
       - "15672:15672"
+      - "15692:15692"
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
@@ -14,6 +16,8 @@ services:
       - rabbitmq-log:/var/log/rabbitmq
     networks:
       - rabbitmq-network
+      - monitoring-network
+
   user-service:
     container_name: user-service
     env_file:
@@ -22,16 +26,19 @@ services:
       context: ./user-api
       dockerfile: Dockerfile
     depends_on:
-      - app-database
+      - user-database
       - rabbitmq
     restart: always
     networks:
       - rabbitmq-network
-      - database-network
+      - user-database-network
+      - nginx-network
+      - monitoring-network
     ports:
       - "${USER_PORT}:${USER_PORT}"
     environment:
-      - SPRING_PROFILES_ACTIVE=container       
+      - SPRING_PROFILES_ACTIVE=container
+
   email-service:
     container_name: email-service
     env_file:
@@ -44,11 +51,31 @@ services:
       - rabbitmq
     networks:
       - rabbitmq-network
+      - monitoring-network
     ports:
       - "${EMAIL_PORT}:${EMAIL_PORT}"
     environment:
-      - SPRING_PROFILES_ACTIVE=container     
+      - SPRING_PROFILES_ACTIVE=container
 
+  stock-service:
+    container_name: stock-service
+    env_file:
+      - ./stock-control-api/.env
+    build:
+      context: ./stock-control-api
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      - stock-database
+    ports:
+      - "${STOCK_PORT}:${STOCK_PORT}"
+    environment:
+      - SPRING_PROFILES_ACTIVE=container
+    networks:
+      - stock-database-network
+      - nginx-network
+      - monitoring-network
+      
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin-application
@@ -59,30 +86,98 @@ services:
       PGADMIN_DEFAULT_EMAIL: microservices@application.com
       PGADMIN_DEFAULT_PASSWORD: admin
     depends_on:
-      - app-database
+      - user-database
+      - stock-database
     networks:
-      - database-network
-  app-database:
+      - user-database-network
+      - stock-database-network
+
+  user-database:
     image: postgres:17-alpine
-    container_name: app-database
+    container_name: user-database
     restart: always
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_DB: ${DB_NAME_USER}
     volumes:
-      - app-database-data:/var/lib/postgresql/data
+      - user-database-data:/var/lib/postgresql/data
     networks:
-      - database-network
-    
+      - user-database-network
+  
+  stock-database:
+    image: postgres:17-alpine
+    container_name: stock-database
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME_STOCK}
+    volumes:
+      - stock-database-data:/var/lib/postgresql/data
+    networks:
+      - stock-database-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    depends_on:
+      - stock-service
+      - user-service
+    ports:
+      - "8000:80"
+    environment:
+      - NGINX_HOST=stockcontrol
+      - NGINX_PORT=80
+      - USER_PORT=${USER_PORT}
+      - STOCK_PORT=${STOCK_PORT}
+    volumes:
+      - ./templates:/etc/nginx/templates
+    networks:
+      - nginx-network
+
+  prometheus:
+    image: prom/prometheus:v3.0.0 
+    container_name: prometheus
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    networks:
+      - rabbitmq-network
+      - monitoring-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+    networks:
+      - monitoring-network
 
 volumes:
   rabbitmq-data:
   rabbitmq-log:
-  app-database-data:
+  user-database-data:
+  stock-database-data:
+  prometheus-data:
 
 networks:
-  database-network:
+  user-database-network:
     driver: bridge
   rabbitmq-network:
+    driver: bridge
+  stock-database-network:
+    driver: bridge 
+  nginx-network:
+    driver: bridge
+  monitoring-network:
     driver: bridge
