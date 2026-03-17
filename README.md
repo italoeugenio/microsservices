@@ -401,11 +401,11 @@ Same body as POST.
 | Layer            | Technology                             |
 | ---------------- | -------------------------------------- |
 | Language         | Java 17                                |
-| Framework        | Spring Boot 4.x                        |
+| Framework        | Spring Boot                        |
 | Security         | Spring Security + JWT (auth0 java-jwt) |
 | Database         | PostgreSQL 17                          |
 | Migrations       | Flyway                                 |
-| Messaging        | RabbitMQ 4.x                           |
+| Messaging        | RabbitMQ                            |
 | Email            | Resend                                 |
 | Gateway          | Nginx                                  |
 | Monitoring       | Prometheus + Grafana                   |
